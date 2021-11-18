@@ -29,6 +29,22 @@ def report_channel(guild):
 EMOJIS = [emojize(":pause_button:"), emojize(":stop_sign:")]
 
 
+def is_ignored_channel(channel):
+    return channel.name in [
+        "mod-chat",
+        "mod-log",
+        "carl-spam-zone",
+        "welcome-logs",
+        "archive-ops-pings",
+        "announcements",
+        "faq",
+        "roles-and-sigils",
+        "dispatch",
+        "rules",
+        "modmail-log",
+    ]
+
+
 class PauseStop(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -89,6 +105,8 @@ class PauseStop(commands.Cog):
 
 async def send_report(guild, emoji, actor, message, from_reaction=False):
     channel = message.channel
+    if is_ignored_channel(channel):
+        return
     report_message = "{}: {} in {}".format(
         caretaker_role(guild).mention,
         emoji,
