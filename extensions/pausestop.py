@@ -37,6 +37,8 @@ class PauseStop(commands.Cog):
     async def handle_reacts(self, payload):
         if payload.user_id == self.bot.user.id:
             return
+        if payload.member.bot:
+            return
         if not payload.guild_id:
             return
         emoji = str(payload.emoji)
@@ -76,6 +78,8 @@ class PauseStop(commands.Cog):
             return
         actor = message.author
         if actor == self.bot.user:
+            return
+        if actor.bot:
             return
         guild = message.guild
         if member_has_role(actor, caretaker_role(guild).id):
