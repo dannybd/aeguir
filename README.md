@@ -1,4 +1,4 @@
-# Aeguir Penguin (🐧), a SIBR bot
+# Aeguir Penguin (🐧), a SIBR moderation bot
 
 Features:
 * Tracking ⏸ and 🛑 usage on the Discord server
