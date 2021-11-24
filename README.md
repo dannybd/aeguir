@@ -1,11 +1,12 @@
 # Aeguir Penguin (🐧), a SIBR bot
 
-`bot.py` is a Discord bot which can interface with SQL if you want it to
+Features:
+* Tracking ⏸ and 🛑 usage on the Discord server
 
 ## Usage
 ```
 cp config.ini-template config.ini
-# set up your configuration to the DB, asyncio_server ports, etc.
+# Record your bot secret
 nano config.ini
 ```
 

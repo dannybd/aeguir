@@ -1,9 +1,2 @@
 [discord]
 botsecret = <<BOTSECRET>>
-
-[db]
-host = localhost
-port = 80
-user = admin
-passwd = secureihope
-db = dbname
