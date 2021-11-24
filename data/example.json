@@ -1,0 +1,19 @@
+{
+  "guild_key": "sibr",
+  "guild_id": "738107179294523402",
+  "mod_role": "Society Caretaker",
+  "report_channel": "mod-log",
+  "ignored_channels": [
+    "mod-chat",
+    "mod-log",
+    "carl-spam-zone",
+    "welcome-logs",
+    "archive-ops-pings",
+    "announcements",
+    "faq",
+    "roles-and-sigils",
+    "dispatch",
+    "rules",
+    "modmail-log"
+  ]
+}
