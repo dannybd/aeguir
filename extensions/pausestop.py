@@ -6,7 +6,7 @@ from emoji import emojize
 
 CARETAKER_ROLES = {
     "sibr": 738108360964178082,
-    "dannybd-test": 904974590986559508,
+    "test": 904974590986559508,
 }
 
 
@@ -17,7 +17,7 @@ def caretaker_role(guild):
 
 REPORT_CHANNELS = {
     "sibr": 738589319656112229,
-    "dannybd-test": 904863674806718506,
+    "test": 904863674806718506,
 }
 
 

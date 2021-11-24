@@ -5,7 +5,7 @@ from hashlib import md5
 
 
 GUILDS = {
-    "dannybd-test": 432741711786278913,
+    "test": 432741711786278913,
     "sibr": 738107179294523402,
 }
 
