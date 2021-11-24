@@ -1,4 +1,3 @@
-import configparser
 import discord
 from discord.ext import commands
 from hashlib import md5
@@ -32,7 +31,3 @@ def get_stable_embed_color(msg):
     hash = md5(msg.encode("utf-8")).hexdigest()
     hue = int(hash, 16) / 16 ** len(hash)
     return discord.Color.from_hsv(hue, 0.655, 1)
-
-
-config = configparser.ConfigParser()
-config.read("config.ini")

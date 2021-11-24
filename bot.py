@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+import configparser
 import discord
 import logging
 import os
@@ -56,5 +57,7 @@ for extension in glob.glob("extensions/*.py"):
         logging.warning("Failed to load extension {}\n{}".format(extension, exc))
 
 logging.info("Starting!")
-bot.run(config["discord"]["botsecret"])
+bot_config = configparser.ConfigParser()
+bot_config.read("config.ini")
+bot.run(bot_config["discord"]["botsecret"])
 logging.info("Done, closing out")
