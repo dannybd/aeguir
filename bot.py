@@ -4,10 +4,9 @@ import configparser
 import discord
 import logging
 import os
-import traceback
 import glob
 
-from common import *
+from common import format_exception
 from discord.ext import commands
 
 # Define logging levels
@@ -53,8 +52,9 @@ for extension in glob.glob("extensions/*.py"):
         logging.info("Loading {}".format(ext))
         bot.load_extension(ext)
     except Exception as e:
-        exc = "{}: {}".format(type(e).__name__, traceback.format_exc())
-        logging.warning("Failed to load extension {}\n{}".format(extension, exc))
+        logging.warning(
+            f"Failed to load extension {extension}\n{format_exception(e)}",
+        )
 
 logging.info("Starting!")
 bot_config = configparser.ConfigParser()

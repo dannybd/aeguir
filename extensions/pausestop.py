@@ -1,48 +1,12 @@
 """ Alerts mods when pause and stop reacts are used """
-from common import get_guild_key, get_stable_embed_color, member_has_role
 import discord
+
+from common import get_config, get_stable_embed_color, log
 from discord.ext import commands
 from emoji import emojize
 
-CARETAKER_ROLES = {
-    "sibr": 738108360964178082,
-    "test": 904974590986559508,
-}
-
-
-def caretaker_role(guild):
-    role_id = CARETAKER_ROLES[get_guild_key(guild)]
-    return guild.get_role(role_id)
-
-
-REPORT_CHANNELS = {
-    "sibr": 738589319656112229,
-    "test": 904863674806718506,
-}
-
-
-def report_channel(guild):
-    channel_id = REPORT_CHANNELS[get_guild_key(guild)]
-    return guild.get_channel(channel_id)
-
 
 EMOJIS = [emojize(":pause_button:"), emojize(":stop_sign:")]
-
-
-def is_ignored_channel(channel):
-    return channel.name in [
-        "mod-chat",
-        "mod-log",
-        "carl-spam-zone",
-        "welcome-logs",
-        "archive-ops-pings",
-        "announcements",
-        "faq",
-        "roles-and-sigils",
-        "dispatch",
-        "rules",
-        "modmail-log",
-    ]
 
 
 class PauseStop(commands.Cog):
@@ -83,8 +47,6 @@ class PauseStop(commands.Cog):
             # Not the first one of these
             return
         actor = payload.member
-        if member_has_role(actor, caretaker_role(guild).id):
-            pass  # return
         await send_report(guild, emoji, actor, message, from_reaction=True)
 
     @commands.Cog.listener("on_message")
@@ -98,17 +60,18 @@ class PauseStop(commands.Cog):
         if actor.bot:
             return
         guild = message.guild
-        if member_has_role(actor, caretaker_role(guild).id):
-            pass  # return
         await send_report(guild, emoji, actor, message)
 
 
 async def send_report(guild, emoji, actor, message, from_reaction=False):
     channel = message.channel
-    if is_ignored_channel(channel):
+    config = get_config(guild)
+    if channel.name in config["ignored_channels"]:
+        log(guild, f"{emoji}  used by {actor} in #{channel}, which is IGNORED")
         return
+    mod_role = discord.utils.get(guild.roles, name=config["mod_role"])
     report_message = "{}: {} in {}".format(
-        caretaker_role(guild).mention,
+        mod_role.mention,
         emoji,
         channel.mention,
     )
@@ -126,7 +89,9 @@ async def send_report(guild, emoji, actor, message, from_reaction=False):
     embed.add_field(
         name="Link", value="[Jump to Message]({})".format(message.jump_url), inline=True
     )
-    await report_channel(guild).send(report_message, embed=embed)
+    report_channel = discord.utils.get(guild.channels, name=config["report_channel"])
+    await report_channel.send(report_message, embed=embed)
+    log(guild, f"{emoji}  used by {actor} in #{channel}")
 
 
 def setup(bot):
