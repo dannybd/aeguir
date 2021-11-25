@@ -47,6 +47,14 @@ async function sendReport(guild, emoji, actor, message, fromReaction) {
 module.exports = {
   setup: (client) => {
     client.on('messageReactionAdd', async (reaction, actor) => {
+      if (reaction.partial) {
+        try {
+          await reaction.fetch();
+        } catch (error) {
+          console.error(error);
+          return;
+        }
+      }
       if (actor.bot) {
         return;
       }
@@ -70,6 +78,14 @@ module.exports = {
     });
 
     client.on('messageCreate', async (message) => {
+      if (message.partial) {
+        try {
+          await message.fetch();
+        } catch (error) {
+          console.error(error);
+          return;
+        }
+      }
       const guild = message.guild;
       if (!guild) {
         return;

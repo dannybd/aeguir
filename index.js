@@ -12,6 +12,13 @@ const client = new Client({
     Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.GUILDS,
   ],
+  partials: [
+    'CHANNEL',
+    'GUILD_MEMBER',
+    'MESSAGE',
+    'REACTION',
+    'USER',
+  ],
 });
 
 // When the client is ready, run this code (only once)

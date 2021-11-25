@@ -1,6 +1,4 @@
 """ Ensure we can reload aeguir without restarting """
-import discord
-
 from common import bust_cache, get_config, is_mod
 from discord.ext import commands
 

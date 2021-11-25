@@ -46,6 +46,11 @@ const getConfigImpl = memoize((guild, cacheCounter) => {
   );
 });
 
+function isMod(member) {
+  const config = getConfig(member.guild);
+  return member.roles.cache.find(role => role.name === config['mod_role']);
+}
+
 function log(guild, msg) {
   console.log(`>>> GUILD ${getGuildKey(guild).toUpperCase()}: ${msg}`);
 }
@@ -65,6 +70,7 @@ module.exports = {
   bustCache,
   getConfig,
   getStableEmbedColor,
+  isMod,
   log,
   printUser,
 };
