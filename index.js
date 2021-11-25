@@ -23,7 +23,8 @@ console.log('Loading extensions...');
 glob.sync('./extensions/*.js').forEach(file => {
   try {
     console.log(`Loading ${file}`);
-    require(path.resolve(file));
+    const extension = require(path.resolve(file));
+    extension.setup(client);
   } catch (error) {
     console.error(`Failed to load extension ${file}`, error);
   }
