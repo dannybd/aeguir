@@ -1,9 +1,4 @@
-const {
-  bustCache,
-  getConfig,
-  isMod,
-} = require('../common.js');
-const {MessageEmbed} = require('discord.js');
+const {bustCache, getConfig, isMod} = require('../common.js');
 
 const EMOJIS = ['⏸', '🛑'];
 
