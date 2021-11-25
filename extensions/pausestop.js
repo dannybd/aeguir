@@ -1,4 +1,9 @@
-const {getConfig, log, printUser} = require('../common.js');
+const {
+  getConfig,
+  getStableEmbedColor,
+  log,
+  printUser,
+} = require('../common.js');
 const {MessageEmbed} = require('discord.js');
 
 const EMOJIS = ['⏸', '🛑'];
@@ -23,7 +28,7 @@ async function sendReport(guild, emoji, actor, message, fromReaction) {
   const reportMessage = `${modRole}: ${emoji} in ${channel}`;
   const content = message.content || '';
   const embed = new MessageEmbed({
-    color: 'LUMINOUS_VIVID_PINK',
+    color: getStableEmbedColor(channel.name),
     title: `${emoji} in #${channel.name}`,
     description: `**Message:** ` +
       `${fromReaction ? `_(${emoji} in reaction to this message)_`: ''}\n` +

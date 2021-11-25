@@ -1,6 +1,8 @@
+const crypto = require('crypto');
 const fs = require('fs');
 const memoize = require("memoizee");
 const path = require('path');
+const rgb = require('hsv-rgb');
 
 let CACHE_BUSTER = 0;
 
@@ -52,9 +54,17 @@ function printUser(user) {
   return `${user.username}#${user.discriminator}`;
 }
 
+
+function getStableEmbedColor(msg) {
+  const hash = crypto.createHash('md5').update(msg).digest('hex');
+  const hue = parseInt(hash, 16) / (16 ** hash.length) * 360;
+  return rgb(hue, 65.5, 100);
+}
+
 module.exports = {
   bustCache,
   getConfig,
+  getStableEmbedColor,
   log,
   printUser,
 };
