@@ -1,10 +1,10 @@
-const {getConfig, log, printUser} = require('../common.js');
+const {getConfig, log, printUser, wrapErrors} = require('../common.js');
 
 const EMOJIS = ['⏸', '🛑'];
 
 module.exports = {
   setup: (client) => {
-    client.on('messageCreate', async (message) => {
+    client.on('messageCreate', wrapErrors(async (message) => {
       if (message.partial) {
         try {
           await message.fetch();
@@ -13,7 +13,11 @@ module.exports = {
           return;
         }
       }
-      if (!/\b\+tempcheck\b/.test(message.content.toLowerCase())) {
+      const {content} = message;
+      if (!content) {
+        return;
+      }
+      if (!/\bdtempcheck\b/i.test(content)) {
         return;
       }
       const actor = message.member?.user;
@@ -40,6 +44,6 @@ module.exports = {
       await message.react('⚠️');
       await message.react('🛑');
       log(guild, `tempcheck used by ${printUser(actor)} in #${channel.name}`);
-    });
+    }));
   },
 };

@@ -1,10 +1,10 @@
-const {bustCache, getConfig, isMod} = require('../common.js');
+const {bustCache, getConfig, isMod, wrapErrors} = require('../common.js');
 
 const EMOJIS = ['⏸', '🛑'];
 
 module.exports = {
   setup: (client) => {
-    client.on('messageCreate', async (message) => {
+    client.on('messageCreate', wrapErrors(async (message) => {
       if (message.partial) {
         try {
           await message.fetch();
@@ -39,6 +39,6 @@ module.exports = {
       }
       const newCacheVal = bustCache(guild);
       await message.reply(`Cache index now = ${newCacheVal}`);
-    });
+    }));
   },
 };

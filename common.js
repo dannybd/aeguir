@@ -59,11 +59,20 @@ function printUser(user) {
   return `${user.username}#${user.discriminator}`;
 }
 
-
 function getStableEmbedColor(msg) {
   const hash = crypto.createHash('md5').update(msg).digest('hex');
   const hue = parseInt(hash, 16) / (16 ** hash.length) * 360;
   return rgb(hue, 65.5, 100);
+}
+
+function wrapErrors(func) {
+  return async (...args) => {
+    try {
+      await func(...args);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 }
 
 module.exports = {
@@ -73,4 +82,5 @@ module.exports = {
   isMod,
   log,
   printUser,
+  wrapErrors,
 };

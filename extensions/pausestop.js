@@ -3,6 +3,7 @@ const {
   getStableEmbedColor,
   log,
   printUser,
+  wrapErrors,
 } = require('../common.js');
 const {MessageEmbed} = require('discord.js');
 
@@ -46,7 +47,7 @@ async function sendReport(guild, emoji, actor, message, fromReaction) {
 
 module.exports = {
   setup: (client) => {
-    client.on('messageReactionAdd', async (reaction, actor) => {
+    client.on('messageReactionAdd', wrapErrors(async (reaction, actor) => {
       if (reaction.partial) {
         try {
           await reaction.fetch();
@@ -75,9 +76,9 @@ module.exports = {
         return;
       }
       await sendReport(guild, emoji, actor, message, /* fromReaction */ true);
-    });
+    }));
 
-    client.on('messageCreate', async (message) => {
+    client.on('messageCreate', wrapErrors(async (message) => {
       if (message.partial) {
         try {
           await message.fetch();
@@ -102,6 +103,6 @@ module.exports = {
         return;
       }
       await sendReport(guild, emoji, actor, message, /* fromReaction */ false);
-    });
+    }));
   },
 };
