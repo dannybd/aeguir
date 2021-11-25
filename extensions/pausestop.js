@@ -1,9 +1,63 @@
-const {getConfig} = require('../common.js');
+const {getConfig, log, printUser} = require('../common.js');
+const {MessageEmbed} = require('discord.js');
+
+const EMOJIS = ['⏸', '🛑'];
+
+async function sendReport(guild, emoji, actor, message, fromReaction) {
+  const channel = message.channel;
+  if (!channel.name) {
+    return;
+  }
+  const config = getConfig(guild);
+  if (config['ignored_channels'].includes(channel.name)) {
+    log(
+      guild,
+      `${emoji}  used by ${printUser(actor.user)} ` +
+      `in #${channel.name}, which is IGNORED`,
+    );
+    return;
+  }
+  const modRole = guild.roles.cache.find(
+    role => role.name === config['mod_role'],
+  );
+  const reportMessage = `${modRole}: ${emoji} in ${channel}`;
+  const content = message.content || '';
+  const embed = new MessageEmbed({
+    color: 'LUMINOUS_VIVID_PINK',
+    title: `${emoji} in #${channel.name}`,
+    description: `**Message:** ` +
+      `${fromReaction ? `_(${emoji} in reaction to this message)_`: ''}\n` +
+      (content.length > 500 ? content.substr(0, 500) + '...' : content),
+  });
+  embed.addField('Channel', channel.toString(), true);
+  embed.addField('Who?', actor.toString(), true);
+  embed.addField('Link', `[Jump to Message](${message.url})`, true);
+  const reportChannel = guild.channels.cache.find(
+    channel => channel.name === config['report_channel'],
+  );
+  await reportChannel.send({content: reportMessage, embeds: [embed]});
+  log(guild, `${emoji}  used by ${printUser(actor.user)} in #${channel.name}`);
+}
 
 module.exports = {
   setup: (client) => {
-    client.on('messageCreate', message => {
-      console.log(getConfig(message.guild));
+    client.on('messageCreate', async (message) => {
+      const guild = message.guild;
+      if (!guild) {
+        return;
+      }
+      const emoji = EMOJIS.find(emoji => message.content?.includes(emoji));
+      if (!emoji) {
+        return;
+      }
+      const actor = message.member;
+      if (!actor) {
+        return;
+      }
+      if (actor.user?.bot) {
+        return;
+      }
+      await sendReport(guild, emoji, actor, message, /* fromReaction */ false);
     });
   },
 };

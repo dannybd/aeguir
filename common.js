@@ -38,13 +38,23 @@ function getConfig(guild) {
 
 const getConfigImpl = memoize((guild, cacheCounter) => {
   const key = getGuildKey(guild);
-  // log(guild, f"Reloading data, cache counter = {cache_counter}");
+  log(guild, `Reloading data, cache counter = ${cacheCounter}`);
   return JSON.parse(
     fs.readFileSync(path.resolve(__dirname, `data/${key}.json`)),
   );
 });
 
+function log(guild, msg) {
+  console.log(`>>> GUILD ${getGuildKey(guild).toUpperCase()}: ${msg}`);
+}
+
+function printUser(user) {
+  return `${user.username}#${user.discriminator}`;
+}
+
 module.exports = {
   bustCache,
   getConfig,
+  log,
+  printUser,
 };

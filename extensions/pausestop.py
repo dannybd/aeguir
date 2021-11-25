@@ -51,6 +51,9 @@ class PauseStop(commands.Cog):
 
     @commands.Cog.listener("on_message")
     async def handle_messages(self, message):
+        guild = message.guild
+        if not guild:
+            return
         emoji = next((emoji for emoji in EMOJIS if emoji in message.content), None)
         if not emoji:
             return
@@ -59,11 +62,10 @@ class PauseStop(commands.Cog):
             return
         if actor.bot:
             return
-        guild = message.guild
-        await send_report(guild, emoji, actor, message)
+        await send_report(guild, emoji, actor, message, from_reaction=False)
 
 
-async def send_report(guild, emoji, actor, message, from_reaction=False):
+async def send_report(guild, emoji, actor, message, from_reaction):
     channel = message.channel
     config = get_config(guild)
     if channel.name in config["ignored_channels"]:
