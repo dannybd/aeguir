@@ -1,6 +1,4 @@
-const {getConfig, log, printUser, wrapErrors} = require('../common.js');
-
-const EMOJIS = ['⏸', '🛑'];
+const { getConfig, log, printUser, wrapErrors } = require('../common.js');
 
 module.exports = {
   setup: (client) => {
@@ -13,7 +11,7 @@ module.exports = {
           return;
         }
       }
-      const {content} = message;
+      const { content } = message;
       if (!content) {
         return;
       }
@@ -24,7 +22,7 @@ module.exports = {
       if (!actor) {
         return;
       }
-      const {channel, guild} = message;
+      const { channel, guild } = message;
       if (!guild) {
         return;
       }

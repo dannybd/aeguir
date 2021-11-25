@@ -5,7 +5,7 @@ const {
   printUser,
   wrapErrors,
 } = require('../common.js');
-const {MessageEmbed} = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 const EMOJIS = ['⏸', '🛑'];
 
@@ -31,17 +31,17 @@ async function sendReport(guild, emoji, actor, message, fromReaction) {
   const embed = new MessageEmbed({
     color: getStableEmbedColor(channel.name),
     title: `${emoji} in #${channel.name}`,
-    description: `**Message:** ` +
-      `${fromReaction ? `_(${emoji} in reaction to this message)_`: ''}\n` +
+    description: '**Message:** ' +
+      `${fromReaction ? `_(${emoji} in reaction to this message)_` : ''}\n` +
       (content.length > 500 ? content.substr(0, 500) + '...' : content),
   });
   embed.addField('Channel', channel.toString(), true);
   embed.addField('Who?', actor.toString(), true);
   embed.addField('Link', `[Jump to Message](${message.url})`, true);
   const reportChannel = guild.channels.cache.find(
-    channel => channel.name === config['report_channel'],
+    c => c.name === config['report_channel'],
   );
-  await reportChannel.send({content: reportMessage, embeds: [embed]});
+  await reportChannel.send({ content: reportMessage, embeds: [embed] });
   log(guild, `${emoji}  used by ${printUser(actor)} in #${channel.name}`);
 }
 
@@ -59,23 +59,24 @@ module.exports = {
       if (actor.bot) {
         return;
       }
-      const {count, emoji, message} = reaction;
+      const { count, emoji, message } = reaction;
       if (count !== 1) {
         // Not the first one of these
         return;
       }
-      const {guild, channel, content} = message;
+      const { guild, channel, content } = message;
       if (!guild || !channel) {
         return;
       }
-      if (!EMOJIS.find(emoji => reaction.emoji.name.includes(emoji))) {
+      if (!EMOJIS.find(e => reaction.emoji.name.includes(e))) {
         return;
       }
-      if (EMOJIS.find(emoji => content?.includes(emoji))) {
+      if (EMOJIS.find(e => content?.includes(e))) {
         // Ran already on the content
         return;
       }
-      await sendReport(guild, emoji, actor, message, /* fromReaction */ true);
+      // fromReaction = true
+      await sendReport(guild, emoji, actor, message, true);
     }));
 
     client.on('messageCreate', wrapErrors(async (message) => {
@@ -91,7 +92,7 @@ module.exports = {
       if (!guild) {
         return;
       }
-      const emoji = EMOJIS.find(emoji => message.content?.includes(emoji));
+      const emoji = EMOJIS.find(e => message.content?.includes(e));
       if (!emoji) {
         return;
       }
@@ -102,7 +103,8 @@ module.exports = {
       if (actor.bot) {
         return;
       }
-      await sendReport(guild, emoji, actor, message, /* fromReaction */ false);
+      // fromReaction = false
+      await sendReport(guild, emoji, actor, message, false);
     }));
   },
 };

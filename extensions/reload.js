@@ -1,6 +1,4 @@
-const {bustCache, getConfig, isMod, wrapErrors} = require('../common.js');
-
-const EMOJIS = ['⏸', '🛑'];
+const { bustCache, isMod, wrapErrors } = require('../common.js');
 
 module.exports = {
   setup: (client) => {
@@ -16,7 +14,7 @@ module.exports = {
       if (message.content.toLowerCase() !== 'aeguir reload') {
         return;
       }
-      const {member, guild} = message;
+      const { member, guild } = message;
       if (!guild) {
         return;
       }

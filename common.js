@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const fs = require('fs');
-const memoize = require("memoizee");
+const memoize = require('memoizee');
 const path = require('path');
 const rgb = require('hsv-rgb');
 

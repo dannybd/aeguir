@@ -1,8 +1,8 @@
 const glob = require('glob');
 const path = require('path');
 
-const {Client, Intents} = require('discord.js');
-const {token} = require('./config.json');
+const { Client, Intents } = require('discord.js');
+const { token } = require('./config.json');
 
 // Create a new client instance
 const client = new Client({
