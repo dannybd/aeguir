@@ -19,6 +19,10 @@ client.once('ready', () => {
   console.log('Ready!');
 });
 
+client.on('error', err => {
+  console.log('Global error handler called', err);
+});
+
 console.log('Loading extensions...');
 glob.sync('./extensions/*.js').forEach(file => {
   try {

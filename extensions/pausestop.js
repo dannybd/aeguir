@@ -12,7 +12,7 @@ async function sendReport(guild, emoji, actor, message, fromReaction) {
   if (config['ignored_channels'].includes(channel.name)) {
     log(
       guild,
-      `${emoji}  used by ${printUser(actor.user)} ` +
+      `${emoji}  used by ${printUser(actor)} ` +
       `in #${channel.name}, which is IGNORED`,
     );
     return;
@@ -36,11 +36,34 @@ async function sendReport(guild, emoji, actor, message, fromReaction) {
     channel => channel.name === config['report_channel'],
   );
   await reportChannel.send({content: reportMessage, embeds: [embed]});
-  log(guild, `${emoji}  used by ${printUser(actor.user)} in #${channel.name}`);
+  log(guild, `${emoji}  used by ${printUser(actor)} in #${channel.name}`);
 }
 
 module.exports = {
   setup: (client) => {
+    client.on('messageReactionAdd', async (reaction, actor) => {
+      if (actor.bot) {
+        return;
+      }
+      const {count, emoji, message} = reaction;
+      if (count !== 1) {
+        // Not the first one of these
+        return;
+      }
+      const {guild, channel, content} = message;
+      if (!guild || !channel) {
+        return;
+      }
+      if (!EMOJIS.find(emoji => reaction.emoji.name.includes(emoji))) {
+        return;
+      }
+      if (EMOJIS.find(emoji => content?.includes(emoji))) {
+        // Ran already on the content
+        return;
+      }
+      await sendReport(guild, emoji, actor, message, /* fromReaction */ true);
+    });
+
     client.on('messageCreate', async (message) => {
       const guild = message.guild;
       if (!guild) {
@@ -50,11 +73,11 @@ module.exports = {
       if (!emoji) {
         return;
       }
-      const actor = message.member;
+      const actor = message.member?.user;
       if (!actor) {
         return;
       }
-      if (actor.user?.bot) {
+      if (actor.bot) {
         return;
       }
       await sendReport(guild, emoji, actor, message, /* fromReaction */ false);
