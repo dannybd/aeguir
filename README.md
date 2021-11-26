@@ -1,13 +1,16 @@
-# Aeguir Penguin (🐧), a SIBR bot
+# Aeguir Penguin (🐧), a SIBR moderation bot
 
 Features:
 * Tracking ⏸ and 🛑 usage on the Discord server
 
 ## Usage
 ```
-cp config.ini-template config.ini
+# Install dependencies
+npm install
+
 # Record your bot secret
-nano config.ini
+cp config.json-template config.json
+nano config.json
 ```
 
-Then, run `./bot.py` to start the bot.
+Then, run `node index.js` to start the bot.
