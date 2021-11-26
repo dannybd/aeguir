@@ -4,6 +4,8 @@ const path = require('path');
 const { Client, Intents } = require('discord.js');
 const { token } = require('./config.json');
 
+require('log-timestamp');
+
 // Create a new client instance
 const client = new Client({
   intents: [
