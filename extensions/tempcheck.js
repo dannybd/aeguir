@@ -21,10 +21,7 @@ async function sendTempcheckReport(guild, actor, message) {
     );
     return;
   }
-  const modRole = guild.roles.cache.find(
-    role => role.name === config['mod_role'],
-  );
-  const reportMessage = `${modRole}: tempcheck in ${channel}`;
+  const reportMessage = `tempcheck in ${channel}`;
   const content = message.content || '';
   const embed = new MessageEmbed({
     color: getStableEmbedColor(channel.name),
