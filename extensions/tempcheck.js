@@ -1,4 +1,46 @@
-const { getConfig, log, printUser, wrapErrors } = require('../common.js');
+const {
+  getConfig,
+  getStableEmbedColor,
+  log,
+  printUser,
+  wrapErrors,
+} = require('../common.js');
+const { MessageEmbed } = require('discord.js');
+
+async function sendTempcheckReport(guild, actor, message) {
+  const channel = message.channel;
+  if (!channel.name) {
+    return;
+  }
+  const config = getConfig(guild);
+  if (config['ignored_channels'].includes(channel.name)) {
+    log(
+      guild,
+      `tempcheck used by ${printUser(actor)} ` +
+      `in #${channel.name}, which is IGNORED`,
+    );
+    return;
+  }
+  const modRole = guild.roles.cache.find(
+    role => role.name === config['mod_role'],
+  );
+  const reportMessage = `${modRole}: tempcheck in ${channel}`;
+  const content = message.content || '';
+  const embed = new MessageEmbed({
+    color: getStableEmbedColor(channel.name),
+    title: `tempcheck in #${channel.name}`,
+    description: '**Message:** \n' +
+      (content.length > 500 ? content.substr(0, 500) + '...' : content),
+  });
+  embed.addField('Channel', channel.toString(), true);
+  embed.addField('Who?', actor.toString(), true);
+  embed.addField('Link', `[Jump to Message](${message.url})`, true);
+  const reportChannel = guild.channels.cache.find(
+    c => c.name === config['report_channel'],
+  );
+  await reportChannel.send({ content: reportMessage, embeds: [embed] });
+  log(guild, `tempcheck used by ${printUser(actor)} in #${channel.name}`);
+}
 
 module.exports = {
   setup: (client) => {
@@ -15,7 +57,7 @@ module.exports = {
       if (!content) {
         return;
       }
-      if (!/\bdtempcheck\b/i.test(content)) {
+      if (!/\btempcheck\b/i.test(content)) {
         return;
       }
       const actor = message.member?.user;
@@ -41,7 +83,8 @@ module.exports = {
       await message.react('✅');
       await message.react('⚠️');
       await message.react('🛑');
-      log(guild, `tempcheck used by ${printUser(actor)} in #${channel.name}`);
+
+      await sendTempcheckReport(guild, actor, message);
     }));
   },
 };
