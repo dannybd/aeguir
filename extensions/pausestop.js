@@ -9,7 +9,7 @@ const { MessageEmbed } = require('discord.js');
 
 const EMOJIS = ['⏸', '🛑'];
 
-async function sendReport(guild, emoji, actor, message, fromReaction) {
+async function sendEmojiReport(guild, emoji, actor, message, fromReaction) {
   const channel = message.channel;
   if (!channel.name) {
     return;
@@ -76,7 +76,7 @@ module.exports = {
         return;
       }
       // fromReaction = true
-      await sendReport(guild, emoji, actor, message, true);
+      await sendEmojiReport(guild, emoji, actor, message, true);
     }));
 
     client.on('messageCreate', wrapErrors(async (message) => {
@@ -104,7 +104,7 @@ module.exports = {
         return;
       }
       // fromReaction = false
-      await sendReport(guild, emoji, actor, message, false);
+      await sendEmojiReport(guild, emoji, actor, message, false);
     }));
   },
 };
