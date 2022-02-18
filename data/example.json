@@ -15,5 +15,6 @@
     "dispatch",
     "rules",
     "modmail-log"
-  ]
+  ],
+  "hello_goodbye_channel": "welcome-logs"
 }
