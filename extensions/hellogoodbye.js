@@ -31,7 +31,7 @@ function getAccountAgeEmbedField(member) {
     name: 'Account Age',
     value: plural(
       Math.floor(
-        (new Date() - SnowflakeUtil.deconstruct(id).date) / 86400,
+        (new Date() - SnowflakeUtil.deconstruct(member.id).date) / 86400,
       ),
       'day',
     ),
