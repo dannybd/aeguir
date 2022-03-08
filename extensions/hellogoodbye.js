@@ -20,13 +20,11 @@ function getHelloGoodbyeChannel(guild) {
 }
 
 function getMemberEmbedBase(member) {
-  const author = { name: printUser(member.user) };
-  const displayAvatarURL = member.displayAvatarURL({ dynamic: true });
-  if (displayAvatarURL) {
-    author.iconURL = displayAvatarURL;
-  }
   return new MessageEmbed()
-    .setAuthor(author)
+    .setAuthor({
+      name: printUser(member.user),
+      iconURL: member.displayAvatarURL({ dynamic: true }),
+    })
     .setFooter({ text: `ID ${member.id}` });
 }
 
