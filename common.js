@@ -53,22 +53,6 @@ function isMod(member) {
   return member.roles.cache.find(role => role.name === config['mod_role']);
 }
 
-function plural(num, one, many) {
-  if (num === 1) {
-    return `${num} ${one}`;
-  }
-  if (!many) {
-    return `${num.toLocaleString()} ${one}s`;
-  }
-  return `${num.toLocaleString()} ${many}`;
-}
-
-function getDaysOld(id) {
-  return Math.floor(
-    (SnowflakeUtil.deconstruct(id).date - new Date()) / 86400000,
-  );
-}
-
 function log(guild, msg) {
   console.log(`>>> GUILD ${getGuildKey(guild).toUpperCase()}: ${msg}`);
 }

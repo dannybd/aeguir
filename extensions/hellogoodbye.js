@@ -1,12 +1,10 @@
 const {
   getConfig,
-  getDaysOld,
   log,
-  plural,
   printUser,
   wrapErrors,
 } = require('../common.js');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, SnowflakeUtil } = require('discord.js');
 const { setTimeout: wait } = require('timers/promises');
 
 function getHelloGoodbyeChannel(guild) {
@@ -21,19 +19,34 @@ function getHelloGoodbyeChannel(guild) {
 
 function getMemberEmbedBase(member) {
   return new MessageEmbed()
-    .setAuthor(
-      `User: ${printUser(member.user)}`,
-      member.displayAvatarURL({ dynamic: true }),
-    )
+    .setAuthor({
+      name: `User: ${printUser(member.user)}`,
+      iconURL: member.displayAvatarURL({ dynamic: true }),
+    })
     .setFooter({ text: `ID ${member.id}` });
 }
 
 function getAccountAgeEmbedField(member) {
   return {
     name: 'Account Age',
-    value: plural(getDaysOld(member.id), 'day'),
+    value: plural(
+      Math.floor(
+        (new Date() - SnowflakeUtil.deconstruct(id).date) / 86400,
+      ),
+      'day',
+    ),
     inline: true,
   };
+}
+
+function plural(num, one, many) {
+  if (num === 1) {
+    return `${num} ${one}`;
+  }
+  if (!many) {
+    return `${num.toLocaleString()} ${one}s`;
+  }
+  return `${num.toLocaleString()} ${many}`;
 }
 
 // Initialize the invite cache
@@ -109,7 +122,7 @@ module.exports = {
         content: `🍃 ${printUser(user)} left`,
         embeds: [embed],
       });
-      log(guild, `Member left: ${printUser(member)}`);
+      log(guild, `Member left: ${printUser(user)}`);
     }));
 
 
