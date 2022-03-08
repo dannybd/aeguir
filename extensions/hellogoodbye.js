@@ -51,7 +51,9 @@ module.exports = {
       if (invite) {
         oldInvites.set(invite.code, invite.uses);
       }
-      const inviter = client.users.cache.get(invite.inviter.id);
+      const inviter = invite.inviterId
+        ? client.users.cache.get(invite.inviterId)
+        : null;
       const inviteFields = inviter
         ? [
             { name: 'Invite', value: invite.code, inline: true },
