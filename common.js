@@ -3,6 +3,7 @@ const fs = require('fs');
 const memoize = require('memoizee');
 const path = require('path');
 const rgb = require('hsv-rgb');
+const { SnowflakeUtil } = require('discord.js');
 
 let CACHE_BUSTER = 0;
 
@@ -50,6 +51,22 @@ const getConfigImpl = memoize((guild, cacheCounter) => {
 function isMod(member) {
   const config = getConfig(member.guild);
   return member.roles.cache.find(role => role.name === config['mod_role']);
+}
+
+function plural(num, one, many) {
+  if (num === 1) {
+    return `${num} ${one}`;
+  }
+  if (!many) {
+    return `${num.toLocaleString()} ${one}s`;
+  }
+  return `${num.toLocaleString()} ${many}`;
+}
+
+function getDaysOld(id) {
+  return Math.floor(
+    (SnowflakeUtil.deconstruct(id).date - new Date()) / 86400000,
+  );
 }
 
 function log(guild, msg) {

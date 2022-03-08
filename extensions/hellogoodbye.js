@@ -1,41 +1,41 @@
 const {
   getConfig,
+  getDaysOld,
   log,
+  plural,
   printUser,
   wrapErrors,
 } = require('../common.js');
 const { MessageEmbed } = require('discord.js');
 const { setTimeout: wait } = require('timers/promises');
 
-async function sendHelloGoodbyeReport(member, isHello, additionalFields) {
-  const { guild, user } = member;
+function getHelloGoodbyeChannel(guild) {
   const config = getConfig(guild);
   if (!config['hello_goodbye_channel']) {
-    return;
+    return null;
   }
-  const helloGoodbyeChannel = guild.channels.cache.find(
+  return guild.channels.cache.find(
     c => c.name === config['hello_goodbye_channel'],
   );
-  if (!helloGoodbyeChannel) {
-    return;
-  }
-  const embed = new MessageEmbed()
-    .setColor(isHello ? 'PURPLE' : 'DARKER_GREY')
-    .addFields(
-      { name: 'User', value: printUser(user), inline: true },
-      { name: 'ID', value: member.id, inline: true },
-      { name: '\u200B', value: '\u200B' },
-      ...additionalFields,
-    );
+}
+
+function getMemberEmbedBase(member) {
+  const author = { name: printUser(member.user) };
   const displayAvatarURL = member.displayAvatarURL({ dynamic: true });
   if (displayAvatarURL) {
-    embed.setThumbnail(displayAvatarURL);
+    author.iconURL = displayAvatarURL;
   }
-  await helloGoodbyeChannel.send({
-    content: isHello ? `👋 ${member} joined!` : `🍃 ${printUser(user)} left`,
-    embeds: [embed],
-  });
-  // log(guild, `tempcheck used by ${printUser(user)} in #${channel.name}`);
+  return new MessageEmbed()
+    .setAuthor(author)
+    .setFooter({ text: `ID ${member.id}` });
+}
+
+function getAccountAgeEmbedField(member) {
+  return {
+    name: 'Account Age',
+    value: plural(getDaysOld(member.id), 'day'),
+    inline: true,
+  };
 }
 
 // Initialize the invite cache
@@ -44,54 +44,74 @@ const invites = new Map();
 module.exports = {
   setup: (client) => {
     client.on('guildMemberAdd', wrapErrors(async (member) => {
-      const { guild } = member;
+      const { guild, user } = member;
+      const helloGoodbyeChannel = getHelloGoodbyeChannel(guild);
+      if (!helloGoodbyeChannel) {
+        return;
+      }
       const newInvites = await guild.invites.fetch();
       const oldInvites = invites.get(guild.id);
       const invite = newInvites.find(i => i.uses > oldInvites.get(i.code));
       if (invite) {
         oldInvites.set(invite.code, invite.uses);
       }
-      const inviter = invite.inviterId
+      const inviter = invite?.inviterId
         ? client.users.cache.get(invite.inviterId)
         : null;
-      const inviteFields = inviter
-        ? [
-            { name: 'Invite', value: invite.code, inline: true },
-            { name: 'Channel', value: `${invite.channel}`, inline: true },
-            { name: '\u200B', value: '\u200B' },
-
-            { name: 'Invite Creator', value: printUser(inviter), inline: true },
-            { name: 'Invite Uses', value: `${invite.uses}`, inline: true },
-            { name: '\u200B', value: '\u200B' },
-          ]
-        : [
-            { name: 'Invite', value: '[unknown]', inline: true },
-          ];
-      await sendHelloGoodbyeReport(member, true, inviteFields);
+      const embed = getMemberEmbedBase(member)
+        .setColor('PURPLE')
+        .addFields([
+          {
+            name: 'Invite',
+            value: invite
+              ? [
+                  `🚪 \`${invite.code}\``,
+                  `🔁 Used ${plural(invite.uses, 'time')}`,
+                  `🙋 ${inviter ? printUser(inviter) : '[unknown]'}`,
+                  `➡️ ${invite.channel}`,
+                ].join('\n')
+              : '[unknown]',
+            inline: true,
+          },
+          getAccountAgeEmbedField(member),
+        ]);
+      await helloGoodbyeChannel.send({
+        content: `👋 ${member} joined!`,
+        embeds: [embed],
+      });
+      log(guild, `Member joined: ${printUser(user)}`);
     }));
 
     client.on('guildMemberRemove', wrapErrors(async (member) => {
-      await sendHelloGoodbyeReport(
-        member,
-        false,
-        [
+      const { guild, joinedAt, roles, user } = member;
+      const helloGoodbyeChannel = getHelloGoodbyeChannel(guild);
+      if (!helloGoodbyeChannel) {
+        return;
+      }
+      const embed = getMemberEmbedBase(member)
+        .setColor('DARKER_GREY')
+        .addFields([
           {
             name: 'Last Joined',
-            value: member.joinedAt
-              ?.toISOString()
-              ?.replace('T', ' ')
-              ?.slice(0, -5)
+            value: joinedAt?.toISOString()?.replace('T', ' ')?.slice(0, -5)
               || '[unknown]',
+            inline: true,
           },
+          getAccountAgeEmbedField(member),
           {
             name: 'Roles',
-            value: member.roles.cache.map(role => role.name)
+            value: roles.cache.map(role => role.name)
               .filter(x => x !== '@everyone')
               .join(', ')
               || '[none]',
+            inline: true,
           },
-        ],
-      );
+        ]);
+      await helloGoodbyeChannel.send({
+        content: `🍃 ${printUser(user)} left`,
+        embeds: [embed],
+      });
+      log(guild, `Member left: ${printUser(member)}`);
     }));
 
 
