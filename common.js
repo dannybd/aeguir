@@ -9,6 +9,7 @@ let CACHE_BUSTER = 0;
 const GUILDS = {
   'test': '432741711786278913',
   'sibr': '738107179294523402',
+  'pluralcord': '853762746621624371',
 };
 
 function getGuildKey(guild) {
