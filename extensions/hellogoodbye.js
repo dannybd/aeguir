@@ -31,7 +31,7 @@ function getAccountAgeEmbedField(member) {
     name: 'Account Age',
     value: plural(
       Math.floor(
-        (new Date() - SnowflakeUtil.deconstruct(member.id).date) / 86400,
+        (Date.now() - SnowflakeUtil.timestampFrom(member.id)) / (86400 * 1000),
       ),
       'day',
     ),
@@ -51,6 +51,22 @@ function plural(num, one, many) {
 
 // Initialize the invite cache
 const invites = new Map();
+const allJoinedAt = new Map();
+
+async function populateGuildCacheInfo(guild) {
+  guild.invites.fetch().then(guildInvites => {
+    invites.set(
+      guild.id,
+      new Map(guildInvites.map(invite => [invite.code, invite.uses])),
+    );
+  });
+  guild.members.fetch().then(guildMembers => {
+    allJoinedAt.set(
+      guild.id,
+      new Map(guildMembers.map(member => [member.id, member.joinedAt])),
+    );
+  });
+}
 
 module.exports = {
   setup: (client) => {
@@ -91,20 +107,25 @@ module.exports = {
         embeds: [embed],
       });
       log(guild, `Member joined: ${printUser(user)}`);
+      allJoinedAt.get(guild.id)?.set(member.id, member.joinedAt);
     }));
 
     client.on('guildMemberRemove', wrapErrors(async (member) => {
-      const { guild, joinedAt, roles, user } = member;
+      const { guild, id, roles, user } = member;
       const helloGoodbyeChannel = getHelloGoodbyeChannel(guild);
       if (!helloGoodbyeChannel) {
         return;
       }
+      const guildJoinedAt = allJoinedAt.get(guild.id);
       const embed = getMemberEmbedBase(member)
         .setColor('DARKER_GREY')
         .addFields([
           {
             name: 'Last Joined',
-            value: joinedAt?.toISOString()?.replace('T', ' ')?.slice(0, -5)
+            value: guildJoinedAt?.get(id)
+              ?.toISOString()
+              ?.replace('T', ' ')
+              ?.slice(0, -5)
               || '[unknown]',
             inline: true,
           },
@@ -123,6 +144,7 @@ module.exports = {
         embeds: [embed],
       });
       log(guild, `Member left: ${printUser(user)}`);
+      guildJoinedAt?.delete(id);
     }));
 
 
@@ -134,14 +156,7 @@ module.exports = {
 
       // Loop over all the guilds
       client.guilds.cache.forEach(async (guild) => {
-        // Fetch all Guild Invites
-        const firstInvites = await guild.invites.fetch();
-        // Set the key as Guild ID, and create a map which has the invite code,
-        // and the number of uses
-        invites.set(
-          guild.id,
-          new Map(firstInvites.map((invite) => [invite.code, invite.uses])),
-        );
+        await populateGuildCacheInfo(guild);
       });
     }));
 
@@ -156,20 +171,13 @@ module.exports = {
     }));
 
     client.on('guildCreate', wrapErrors(async (guild) => {
-      // We've been added to a new Guild. Let's fetch all the invites,
-      // and save it to our cache
-      guild.invites.fetch().then(guildInvites => {
-        // This is the same as the ready event
-        invites.set(
-          guild.id,
-          new Map(guildInvites.map((invite) => [invite.code, invite.uses])),
-        );
-      })
+      await populateGuildCacheInfo(guild);
     }));
 
     client.on('guildDelete', wrapErrors(async (guild) => {
       // We've been removed from a Guild. Let's delete all their invites
       invites.delete(guild.id);
+      allJoinedAt.delete(guild.id);
     }));
   },
 };
