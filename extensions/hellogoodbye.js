@@ -49,13 +49,13 @@ function plural(num, one, many) {
   return `${num.toLocaleString()} ${many}`;
 }
 
-// Initialize the invite cache
-const invites = new Map();
+// Initialize the invite & joinedAt caches
+const allInvites = new Map();
 const allJoinedAt = new Map();
 
 async function populateGuildCacheInfo(guild) {
   guild.invites.fetch().then(guildInvites => {
-    invites.set(
+    allInvites.set(
       guild.id,
       new Map(guildInvites.map(invite => [invite.code, invite.uses])),
     );
@@ -77,7 +77,7 @@ module.exports = {
         return;
       }
       const newInvites = await guild.invites.fetch();
-      const oldInvites = invites.get(guild.id);
+      const oldInvites = allInvites.get(guild.id);
       const invite = newInvites.find(i => i.uses > oldInvites.get(i.code));
       if (invite) {
         oldInvites.set(invite.code, invite.uses);
@@ -162,12 +162,12 @@ module.exports = {
 
     client.on('inviteDelete', wrapErrors(async (invite) => {
       // Delete the Invite from Cache
-      invites.get(invite.guild.id).delete(invite.code);
+      allInvites.get(invite.guild.id).delete(invite.code);
     }));
 
     client.on('inviteCreate', wrapErrors(async (invite) => {
-      // Update cache on new invites
-      invites.get(invite.guild.id).set(invite.code, invite.uses);
+      // Update cache on new allInvites
+      allInvites.get(invite.guild.id).set(invite.code, invite.uses);
     }));
 
     client.on('guildCreate', wrapErrors(async (guild) => {
@@ -176,7 +176,7 @@ module.exports = {
 
     client.on('guildDelete', wrapErrors(async (guild) => {
       // We've been removed from a Guild. Let's delete all their invites
-      invites.delete(guild.id);
+      allInvites.delete(guild.id);
       allJoinedAt.delete(guild.id);
     }));
   },
