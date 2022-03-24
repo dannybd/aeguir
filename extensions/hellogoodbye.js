@@ -26,15 +26,17 @@ function getMemberEmbedBase(member) {
     .setFooter({ text: `ID ${member.id}` });
 }
 
+function getDaysAgo(timestamp) {
+  return plural(
+    Math.floor((Date.now() - timestamp) / (86400 * 1000)),
+    'day',
+  );
+}
+
 function getAccountAgeEmbedField(member) {
   return {
     name: 'Account Age',
-    value: plural(
-      Math.floor(
-        (Date.now() - SnowflakeUtil.timestampFrom(member.id)) / (86400 * 1000),
-      ),
-      'day',
-    ),
+    value: getDaysAgo(SnowflakeUtil.timestampFrom(member.id)),
     inline: true,
   };
 }
@@ -49,9 +51,9 @@ function plural(num, one, many) {
   return `${num.toLocaleString()} ${many}`;
 }
 
-// Initialize the invite & joinedAt caches
+// Initialize the invite & joinedTimestamp caches
 const allInvites = new Map();
-const allJoinedAt = new Map();
+const allJoinedTimestamps = new Map();
 
 async function populateGuildCacheInfo(guild) {
   guild.invites.fetch().then(guildInvites => {
@@ -61,9 +63,9 @@ async function populateGuildCacheInfo(guild) {
     );
   });
   guild.members.fetch().then(guildMembers => {
-    allJoinedAt.set(
+    allJoinedTimestamps.set(
       guild.id,
-      new Map(guildMembers.map(member => [member.id, member.joinedAt])),
+      new Map(guildMembers.map(member => [member.id, member.joinedTimestamp])),
     );
   });
 }
@@ -107,7 +109,7 @@ module.exports = {
         embeds: [embed],
       });
       log(guild, `Member joined: ${printUser(user)}`);
-      allJoinedAt.get(guild.id)?.set(member.id, member.joinedAt);
+      allJoinedTimestamps.get(guild.id)?.set(member.id, member.joinedTimestamp);
     }));
 
     client.on('guildMemberRemove', wrapErrors(async (member) => {
@@ -116,17 +118,16 @@ module.exports = {
       if (!helloGoodbyeChannel) {
         return;
       }
-      const guildJoinedAt = allJoinedAt.get(guild.id);
+      const guildJoinedTimestamp = allJoinedTimestamps.get(guild.id);
+      const joinedTimestamp = guildJoinedTimestamp?.get(id);
       const embed = getMemberEmbedBase(member)
         .setColor('DARKER_GREY')
         .addFields([
           {
-            name: 'Last Joined',
-            value: guildJoinedAt?.get(id)
-              ?.toISOString()
-              ?.replace('T', ' ')
-              ?.slice(0, -5)
-              || '[unknown]',
+            name: 'Member For',
+            value: joinedTimestamp || joinedTimestamp === 0
+              ? getDaysAgo(joinedTimestamp)
+              : '[unknown]',
             inline: true,
           },
           getAccountAgeEmbedField(member),
@@ -144,7 +145,7 @@ module.exports = {
         embeds: [embed],
       });
       log(guild, `Member left: ${printUser(user)}`);
-      guildJoinedAt?.delete(id);
+      guildJoinedTimestamp?.delete(id);
     }));
 
 
@@ -177,7 +178,7 @@ module.exports = {
     client.on('guildDelete', wrapErrors(async (guild) => {
       // We've been removed from a Guild. Let's delete all their invites
       allInvites.delete(guild.id);
-      allJoinedAt.delete(guild.id);
+      allJoinedTimestamps.delete(guild.id);
     }));
   },
 };
