@@ -20,7 +20,7 @@ function getHelloGoodbyeChannel(guild) {
 function getMemberEmbedBase(member) {
   return new MessageEmbed()
     .setAuthor({
-      name: `User: ${printUser(member.user)}`,
+      name: printUser(member.user),
       iconURL: member.displayAvatarURL({ dynamic: true }),
     })
     .setFooter({ text: `ID ${member.id}` });
