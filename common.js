@@ -58,7 +58,9 @@ function log(guild, msg) {
 }
 
 function printUser(user) {
-  return `${user.username}#${user.discriminator}`;
+  return parseInt(user.discriminator)
+    ? `${user.username}#${user.discriminator}`
+    : user.username;
 }
 
 function getStableEmbedColor(msg) {
